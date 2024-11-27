@@ -1,7 +1,7 @@
-#define AGENTS 10000
+#define AGENTS 100000
 #define ROUNDS 2000
 #define VERBOSE false
-
+#define PARALLEL true
 #include <iostream>
 #include <omp.h>
 
@@ -33,8 +33,10 @@ int main() {
     for (int i = 0; i < ROUNDS; i++) {
         if (VERBOSE) std::cout << "----" << "Sim step " << i << " ----" << std::endl;
 
-        // Update country prosperity (parallelized)
+        // Update country prosperity
+#if PARALLEL
 #pragma omp parallel for
+#endif
         for (int c = 0; c < 4; c++) {
             if (VERBOSE) std::cout << countries[c].toString() << std::endl;
             countries[c].UpdateProsperity();
@@ -44,8 +46,10 @@ int main() {
             }
         }
 
-        // Agents evaluate migration and potentially immigrate (parallelized)
+        // Agents evaluate migration and potentially immigrate
+#if PARALLEL
 #pragma omp parallel for
+#endif
         for (int a = 0; a < AGENTS; a++) {
             Country* bestCountry = &countries[agents[a].EvaluateMigration(countries)];
             if (bestCountry != agents[a].country && rand() % 100 == 1) {  // 1 in 100 chance of immigrating
